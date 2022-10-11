@@ -4,6 +4,7 @@ import dataclasses
 from typing import (
     Any,
     Callable,
+    Collection,
     Dict,
     List,
     Optional,
@@ -161,9 +162,11 @@ def _get_model_hints(
             store |= attr_store.with_prefix(prefix, info=info) if prefix else attr_store
 
         # Lastly, from the django field itself
-        model_fieldname: str = getattr(field, "django_name", field.python_name)
-        model_field = model_fields.get(model_fieldname, None)
-        if model_field is not None:
+        model_fieldnames: Collection[str] | None = getattr(field, 'optimize_relations', None)
+        if model_fieldnames is None:
+            model_fieldnames = (getattr(field, "django_name", field.python_name), )
+        for model_fieldname in model_fieldnames:
+            model_field = model_fields.get(model_fieldname, None)
             path = f"{prefix}{model_fieldname}"
 
             if isinstance(model_field, (models.ForeignKey, OneToOneRel)):
