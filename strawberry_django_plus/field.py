@@ -75,6 +75,7 @@ class StrawberryDjangoField(_StrawberryDjangoField):
     """
 
     store: OptimizerStore
+    optimize_relations: Optional[List[str]]
 
     def __init__(self, *args, **kwargs):
         self.disable_optimization = kwargs.pop("disable_optimization", False)
@@ -83,6 +84,7 @@ class StrawberryDjangoField(_StrawberryDjangoField):
             select_related=kwargs.pop("select_related", None),
             prefetch_related=kwargs.pop("prefetch_related", None),
         )
+        self.optimize_relations = kwargs.pop('optimize_relations', None)
         super().__init__(*args, **kwargs)
 
     @cached_property
@@ -362,6 +364,7 @@ def field(
     only: Optional[TypeOrSequence[str]] = None,
     select_related: Optional[TypeOrSequence[str]] = None,
     prefetch_related: Optional[TypeOrSequence[PrefetchType]] = None,
+    optimize_relations: Optional[TypeOrSequence[str]] = None,
     disable_optimization: bool = False,
 ) -> _T:
     ...
@@ -387,6 +390,7 @@ def field(
     only: Optional[TypeOrSequence[str]] = None,
     select_related: Optional[TypeOrSequence[str]] = None,
     prefetch_related: Optional[TypeOrSequence[PrefetchType]] = None,
+    optimize_relations: Optional[TypeOrSequence[str]] = None,
     disable_optimization: bool = False,
 ) -> Any:
     ...
@@ -412,6 +416,7 @@ def field(
     only: Optional[TypeOrSequence[str]] = None,
     select_related: Optional[TypeOrSequence[str]] = None,
     prefetch_related: Optional[TypeOrSequence[PrefetchType]] = None,
+    optimize_relations: Optional[TypeOrSequence[str]] = None,
     disable_optimization: bool = False,
 ) -> StrawberryDjangoField:
     ...
@@ -436,6 +441,7 @@ def field(
     only: Optional[TypeOrSequence[str]] = None,
     select_related: Optional[TypeOrSequence[str]] = None,
     prefetch_related: Optional[TypeOrSequence[PrefetchType]] = None,
+    optimize_relations: Optional[TypeOrSequence[str]] = None,
     disable_optimization: bool = False,
     # This init parameter is used by pyright to determine whether this field
     # is added in the constructor or not. It is not used to change
@@ -475,6 +481,7 @@ def field(
         only=only,
         select_related=select_related,
         prefetch_related=prefetch_related,
+        optimize_relations=optimize_relations,
         disable_optimization=disable_optimization,
     )
     if resolver:

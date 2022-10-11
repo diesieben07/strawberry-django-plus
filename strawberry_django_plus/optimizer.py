@@ -162,7 +162,7 @@ def _get_model_hints(
             store |= attr_store.with_prefix(prefix, info=info) if prefix else attr_store
 
         # Lastly, from the django field itself
-        model_fieldnames: Collection[str] | None = getattr(field, 'optimize_relations', None)
+        model_fieldnames: Optional[Collection[str]] = getattr(field, 'optimize_relations', None)
         if model_fieldnames is None:
             model_fieldnames = (getattr(field, "django_name", field.python_name), )
         for model_fieldname in model_fieldnames:

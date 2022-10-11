@@ -181,3 +181,63 @@ class SongType:
         select_related=["album"],
     )
 ```
+
+### Relation hints
+For the general case the optimizer can map nested types on the GraphQL schema back to their Django types
+and thus follow foreign keys and other relation fields. This allows nested optimization and prefetching.
+A case where this cannot work automatically is when the GraphQL field returns a union of multiple possible
+types. In this case you have to specify which relations are needed for your field to allow the optimizer 
+to follow the relations.
+
+!!! Example
+    === "models"
+        ```python
+
+        class PostOffice(models.Model):
+            name = models.CharField()
+
+
+        class Letter(models.Model):
+            post_office = models.ForeignKey(PostOffice)
+            recipient = models.CharField()
+            contents = models.TextField()
+
+
+        class Parcel(models.Model):
+            post_office = models.ForeignKey(PostOffice)
+            recipient = models.CharField()
+            weight = models.IntegerField()
+        ```
+    === "schema"
+        ```python
+        from strawberry_django_plus import gql
+        
+        @gql.django.type(PostOffice)
+        class LetterType:
+            recipient: gql.auto
+            contents: gql.auto
+
+
+        @gql.django.type(models.Parcel)
+        class ParcelType:
+            recipient: gql.auto
+            weight: gql.auto
+
+
+        SendableItem = gql.union('SendableItem', types=(LetterType, ParcelType,))
+
+
+        @gql.django.type(PostOffice)
+        class PostOfficeType:
+            name: auto
+            
+            # optimize_relations tells the optimizer which relations need to be considered for this field
+            @gql.django.field(optimize_relations=('letter_set', 'parcel_set'))
+            def items(root: models.PostOffice) -> List[SendableItem]:
+                return [*root.letter_set.all(), *root.parcel_set.all()]
+
+
+        @gql.type
+        class Query:
+            post_offices: List[PostOfficeType] = gql.django.field()
+        ```
